@@ -69,8 +69,8 @@
   border-radius: 999px;
   background: #fff;
   color: #334155;
-  padding: 5px 8px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
+  padding: 6px 10px;
 }
 .structureHotspot,
 .structureSelected {
@@ -98,7 +98,14 @@
   text-align: center;
   font-size: 0.875rem;
 }
-.mapActions { position: absolute; z-index: 3; left: 18px; top: 18px; display: flex; gap: 8px; }
+.mapActions {
+  position: absolute;
+  z-index: 3;
+  left: 18px;
+  top: 18px;
+  display: flex;
+  gap: 8px;
+}
 .trash,
 .addPosition {
   width: 42px;
@@ -109,7 +116,11 @@
   color: #991b1b;
   font-size: 1.1rem;
 }
-.addPosition { border: 2px dashed #2563eb; background: #dbeafe; color: #1d4ed8; }
+.addPosition {
+  border: 2px dashed #2563eb;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
 .guideLine {
   position: absolute;
   z-index: 2;
