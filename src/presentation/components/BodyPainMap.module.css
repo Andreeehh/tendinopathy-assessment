@@ -1,0 +1,129 @@
+.mapPanel {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+}
+.bodyMap {
+  position: relative;
+  width: min(100%, 760px);
+  aspect-ratio: 406.99026 / 354.43411;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+.bodyIllustration {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+}
+.hotspot,
+.hotspotSelected {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  transform: translate(-50%, -50%);
+  border: 0;
+  background: transparent;
+  color: #334155;
+  padding: 4px;
+}
+.hotspot span,
+.hotspotSelected span {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #2563eb;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 5px rgb(37 99 235 / 15%);
+}
+.hotspot strong,
+.hotspotSelected strong {
+  border-radius: 4px;
+  background: rgb(255 255 255 / 90%);
+  padding: 2px 5px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.hotspotSelected {
+  color: #1d4ed8;
+}
+.hotspotSelected span {
+  background: #2563eb;
+  box-shadow: 0 0 0 7px rgb(37 99 235 / 20%);
+}
+.hotspot:focus-visible,
+.hotspotSelected:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 4px;
+}
+.structureHotspot,
+.structureSelected {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px solid #64748b;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  padding: 5px 8px;
+  font-size: 0.7rem;
+}
+.structureHotspot,
+.structureSelected {
+  touch-action: none;
+  cursor: grab;
+}
+.structureHotspot:active,
+.structureSelected:active {
+  cursor: grabbing;
+}
+.structureSelected {
+  border-color: #16a34a;
+  background: #dcfce7;
+  color: #166534;
+}
+.structureHotspot:focus-visible,
+.structureSelected:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+.legend {
+  max-width: 520px;
+  margin: 0;
+  color: #64748b;
+  text-align: center;
+  font-size: 0.875rem;
+}
+.mapActions { position: absolute; z-index: 3; left: 18px; top: 18px; display: flex; gap: 8px; }
+.trash,
+.addPosition {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 2px dashed #dc2626;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 1.1rem;
+}
+.addPosition { border: 2px dashed #2563eb; background: #dbeafe; color: #1d4ed8; }
+.guideLine {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  border-left: 2px dashed #dc2626;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.guide25 {
+  left: 25.1%;
+}
+.guide50 {
+  left: 52%;
+}
+.guide77 {
+  left: 77.4%;
+}
