@@ -106,6 +106,9 @@
   display: flex;
   gap: 8px;
 }
+.mapActionsMobile {
+  display: none;
+}
 .trash,
 .addPosition {
   width: 42px;
@@ -138,4 +141,24 @@
 }
 .guide77 {
   left: 77.4%;
+}
+
+@media (max-width: 700px) {
+  .mapPanel {
+    gap: 10px;
+  }
+  .mapActions {
+    display: none;
+  }
+  .mapActionsMobile {
+    display: flex;
+    gap: 8px;
+    order: -1;
+  }
+  .trash,
+  .addPosition {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
 }

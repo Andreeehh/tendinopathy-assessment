@@ -78,15 +78,36 @@ export function BodyPainMap({
     onPlacementMove(classifyPosition(left, top))
   }
 
+  function addPlacement() {
+    const defaults: AnatomicalMapPlacement[] = [
+      { face: 'anterior', side: 'right', left: '12.5%', top: '50%' },
+      { face: 'anterior', side: 'left', left: '37.5%', top: '50%' },
+      { face: 'posterior', side: 'left', left: '63.5%', top: '50%' },
+      { face: 'posterior', side: 'right', left: '88.5%', top: '50%' },
+    ]
+    const next = defaults.find((candidate) => !(structureOptions[0]?.placements ?? []).some((item) => placementKey(item) === placementKey(candidate)))
+    if (next) onPlacementAdd?.(next)
+  }
+
+  function removePlacement() {
+    if (selectedPlacement) onPlacementRemove?.(selectedPlacement)
+  }
+
   return (
     <div className={styles.mapPanel}>
+      {placementEditor && (
+        <div className={styles.mapActionsMobile}>
+          <button className={styles.trash} type="button" aria-label="Remover posição anatômica" onClick={removePlacement}>🗑</button>
+          <button className={styles.addPosition} type="button" aria-label="Adicionar posição anatômica" onClick={addPlacement}>＋</button>
+        </div>
+      )}
       <div className={styles.bodyMap} aria-label="Mapa corporal anterior e posterior" onClick={(event) => {
         if (!onMapClick || (event.target instanceof HTMLButtonElement)) return
         const rect = event.currentTarget.getBoundingClientRect()
         onMapClick({ left: `${((event.clientX - rect.left) / rect.width) * 100}%`, top: `${((event.clientY - rect.top) / rect.height) * 100}%` })
       }}>
         {showQuadrantGuides && <><span className={`${styles.guideLine} ${styles.guide25}`} /><span className={`${styles.guideLine} ${styles.guide50}`} /><span className={`${styles.guideLine} ${styles.guide77}`} /></>}
-        {placementEditor && <div className={styles.mapActions}><button className={styles.trash} type="button" aria-label="Remover posição anatômica" onClick={() => selectedPlacement && onPlacementRemove?.(selectedPlacement)}>🗑</button><button className={styles.addPosition} type="button" aria-label="Adicionar posição anatômica" onClick={() => { const defaults: AnatomicalMapPlacement[] = [{ face: 'anterior', side: 'right', left: '12.5%', top: '50%' }, { face: 'anterior', side: 'left', left: '37.5%', top: '50%' }, { face: 'posterior', side: 'left', left: '63.5%', top: '50%' }, { face: 'posterior', side: 'right', left: '88.5%', top: '50%' }]; const next = defaults.find((candidate) => !(structureOptions[0]?.placements ?? []).some((item) => placementKey(item) === placementKey(candidate))); if (next) onPlacementAdd?.(next) }}>＋</button></div>}
+        {placementEditor && <div className={styles.mapActions}><button className={styles.trash} type="button" aria-label="Remover posição anatômica" onClick={removePlacement}>🗑</button><button className={styles.addPosition} type="button" aria-label="Adicionar posição anatômica" onClick={addPlacement}>＋</button></div>}
         <img
           className={styles.bodyIllustration}
           src="/Muscles_front_and_back.svg"

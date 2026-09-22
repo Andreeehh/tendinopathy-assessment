@@ -504,17 +504,8 @@ tbody tr:last-child td {
   }
 }
 @media (max-width: 700px) {
-  .shell {
-    display: block;
-  }
-  .sidebar {
-    width: 100%;
-  }
-  .sidebar nav {
-    display: flex;
-  }
   .page {
-    padding: 20px 16px;
+    padding: 16px 12px 24px;
   }
   .page-heading,
   .pagination {
@@ -528,6 +519,41 @@ tbody tr:last-child td {
   .filters,
   .metric-grid {
     grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 14px;
+  }
+  h1 {
+    font-size: 1.4rem;
+  }
+  h2 {
+    font-size: 0.95rem;
+  }
+  p,
+  label,
+  legend,
+  small,
+  th,
+  td {
+    font-size: 0.8rem;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 0.8rem;
+  }
+  button {
+    padding: 6px 10px;
+  }
+  .tab {
+    padding: 6px 10px;
+  }
+  .list-toolbar {
+    flex-wrap: wrap;
+  }
+  .table-wrap table {
+    min-width: 480px;
   }
 }
 @media (max-width: 700px) {
