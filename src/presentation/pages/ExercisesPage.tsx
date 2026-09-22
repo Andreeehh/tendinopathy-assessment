@@ -27,6 +27,8 @@ export function ExercisesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [screen, setScreen] = useState<'list' | 'form'>('list')
+  const [formTab, setFormTab] = useState<'data' | 'map'>('data')
 
   const load = useCallback(async () => {
     setLoading(true); setError(null)
@@ -45,8 +47,10 @@ export function ExercisesPage() {
   }, [])
   useEffect(() => { void load() }, [load])
 
-  const resetForm = () => { setEditingId(null); setForm({ ...emptyForm, anatomicalStructureId: structures[0]?.id ?? '' }) }
+  const resetForm = () => { setEditingId(null); setForm({ ...emptyForm, anatomicalStructureId: structures[0]?.id ?? '' }); setFormTab('data'); setScreen('form') }
   const edit = (exercise: Exercise) => {
+    setScreen('form')
+    setFormTab('data')
     setEditingId(exercise.id)
     setForm({ anatomicalStructureId: exercise.anatomicalStructureId, targets: exercise.targets ?? [{ anatomicalStructureId: exercise.anatomicalStructureId, allPlacements: true }], kind: exercise.kind, name: exercise.name, slug: exercise.slug, description: exercise.description, instructions: exercise.instructions, youtubeUrl: exercise.youtubeUrl ?? '', active: exercise.active })
   }
@@ -80,20 +84,24 @@ export function ExercisesPage() {
   const structureName = (id: string) => structures.find((structure) => structure.id === id)?.name ?? 'Estrutura não encontrada'
 
   return <>
-    <div className="page-heading"><div><p className="eyebrow">Cadastros</p><h1>Exercícios</h1><p className="muted">Gerencie exercícios relacionados às estruturas anatômicas.</p></div><button type="button" onClick={resetForm}>Novo exercício</button></div>
     {error && <div className="alert" role="alert">{error}</div>}
-    <section className="card form-card" aria-label="Formulário de exercício"><h2>{editingId ? 'Editar exercício' : 'Novo exercício'}</h2><form onSubmit={submit} className="region-form">
+    <section className={screen === 'form' ? 'card form-card' : 'hidden'} aria-label="Formulário de exercício"><h2>{editingId ? 'Editar exercício' : 'Novo exercício'}</h2><form onSubmit={submit} className="region-form">
+      <div className="tab-bar"><button type="button" className={formTab === 'data' ? 'tab active' : 'tab'} onClick={() => setFormTab('data')}>Dados</button><button type="button" className={formTab === 'map' ? 'tab active' : 'tab'} onClick={() => setFormTab('map')}>Posições</button></div>
+      <div className={formTab === 'map' ? 'wide' : 'hidden'}>
+      <div className="wide"><p className="muted">Clique nos markers para selecionar ou remover posições. Os selecionados ficam azuis.</p><BodyPainMap regions={[]} selectedRegionId="" structureOptions={structures.map((structure) => ({ id: structure.id, label: structure.name, placements: structure.mapPlacements }))} selectedStructureId={form.targets[0]?.anatomicalStructureId} selectedPlacement={form.targets[0]?.placement} isStructureSelected={(structureId, placement) => { const selected = form.targets.some((item) => item.anatomicalStructureId === structureId && item.placement?.face === placement.face && item.placement?.side === placement.side); console.debug('[Exercises] estado visual do marker', { structureId, placement, selected }); return selected }} onSelect={() => undefined} onSelectStructure={(structureId, placement) => { const exists = form.targets.some((item) => item.anatomicalStructureId === structureId && item.placement?.face === placement.face && item.placement?.side === placement.side); const targets = exists ? form.targets.filter((item) => !(item.anatomicalStructureId === structureId && item.placement?.face === placement.face && item.placement?.side === placement.side)) : [...form.targets, { anatomicalStructureId: structureId, placement }]; console.info('[Exercises] alternando target', { structureId, placement, exists, targets }); setForm({ ...form, anatomicalStructureId: structureId, targets }) }} /></div>
+      </div>
+      <div className={formTab === 'data' ? 'form-fields' : 'hidden'}>
       <label>Nome<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
       <label>Slug<input required value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value })} /></label>
-      <div className="wide"><p className="muted">Clique nos markers para selecionar ou remover posições. Os selecionados ficam azuis.</p><BodyPainMap regions={[]} selectedRegionId="" structureOptions={structures.map((structure) => ({ id: structure.id, label: structure.name, placements: structure.mapPlacements }))} selectedStructureId={form.targets[0]?.anatomicalStructureId} selectedPlacement={form.targets[0]?.placement} isStructureSelected={(structureId, placement) => { const selected = form.targets.some((item) => item.anatomicalStructureId === structureId && item.placement?.face === placement.face && item.placement?.side === placement.side); console.debug('[Exercises] estado visual do marker', { structureId, placement, selected }); return selected }} onSelect={() => undefined} onSelectStructure={(structureId, placement) => { const exists = form.targets.some((item) => item.anatomicalStructureId === structureId && item.placement?.face === placement.face && item.placement?.side === placement.side); const targets = exists ? form.targets.filter((item) => !(item.anatomicalStructureId === structureId && item.placement?.face === placement.face && item.placement?.side === placement.side)) : [...form.targets, { anatomicalStructureId: structureId, placement }]; console.info('[Exercises] alternando target', { structureId, placement, exists, targets }); setForm({ ...form, anatomicalStructureId: structureId, targets }) }} /></div>
       <fieldset className="toggle-field"><legend>Tipo</legend><div className="toggle-group" role="group" aria-label="Tipo de exercício"><button className={form.kind === 'therapeutic' ? 'toggle-option selected' : 'toggle-option'} type="button" aria-pressed={form.kind === 'therapeutic'} onClick={() => setForm({ ...form, kind: 'therapeutic' })}>Terapêutico</button><button className={form.kind === 'evaluation' ? 'toggle-option selected' : 'toggle-option'} type="button" aria-pressed={form.kind === 'evaluation'} onClick={() => setForm({ ...form, kind: 'evaluation' })}>Avaliativo</button></div></fieldset>
       <label className="wide">Descrição<textarea required rows={2} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
       <label className="wide">Instruções<textarea required rows={3} value={form.instructions} onChange={(event) => setForm({ ...form, instructions: event.target.value })} /></label>
       <label className="wide">Vídeo do YouTube (opcional)<input type="url" placeholder="https://www.youtube.com/watch?v=..." value={form.youtubeUrl} onChange={(event) => setForm({ ...form, youtubeUrl: event.target.value })} /></label>
       <label className="checkbox"><input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} /> Ativo</label>
-      <div className="form-actions"><button type="submit" disabled={saving || form.targets.length === 0}>{saving ? 'Salvando...' : 'Salvar'}</button>{editingId && <button type="button" className="secondary" onClick={resetForm}>Cancelar</button>}</div>
+      <div className="form-actions"><button type="button" onClick={() => setFormTab('map')}>Avançar</button>{editingId && <button type="button" className="secondary" onClick={resetForm}>Cancelar</button>}</div></div>
+      <div className={formTab === 'map' ? 'form-actions' : 'hidden'}><button type="submit" disabled={saving || form.targets.length === 0}>{saving ? 'Salvando...' : 'Salvar exercício'}</button><button type="button" className="secondary" onClick={() => setFormTab('data')}>Voltar</button></div>
     </form></section>
-    <section className="card" aria-label="Lista de exercícios"><div className="filters">
+    <section className={screen === 'list' ? 'card' : 'hidden'} aria-label="Lista de exercícios"><div className="list-toolbar"><h1>Exercícios</h1><button type="button" onClick={resetForm}>Novo exercício</button></div><div className="filters">
       <label>Buscar<input placeholder="Nome ou slug" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} /></label>
       <label>Estrutura<select value={structureFilter} onChange={(event) => { setStructureFilter(event.target.value); setPage(1) }}><option value="">Todas</option>{structures.map((structure) => <option key={structure.id} value={structure.id}>{structure.name}</option>)}</select></label>
       <label>Status<select value={activeFilter} onChange={(event) => { setActiveFilter(event.target.value); setPage(1) }}><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label>

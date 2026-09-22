@@ -26,6 +26,7 @@ export function UserAssessmentPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [plan, setPlan] = useState<ReturnType<typeof createRecommendationPlan> | null>(null)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
 
   useEffect(() => {
     Promise.all([
@@ -57,6 +58,11 @@ export function UserAssessmentPage() {
     [evaluationExercises, structureId],
   )
 
+  function goToStep(nextStep: 1 | 2 | 3) {
+    if (nextStep < 3) setPlan(null)
+    setStep(nextStep)
+  }
+
   function selectStructure(structure: string, selectedPlacement: AnatomicalMapPlacement) {
     console.info('[Assessment] posição selecionada', {
       structureId: structure,
@@ -68,6 +74,7 @@ export function UserAssessmentPage() {
     setPlacement(selectedPlacement)
     setSide(selectedPlacement.side)
     setFace(selectedPlacement.face)
+    goToStep(2)
   }
 
   async function submit() {
@@ -113,7 +120,7 @@ export function UserAssessmentPage() {
         {error && <div className="alert" role="alert">{error}</div>}
         {loading ? <section className="card"><p className="muted">Carregando áreas...</p></section> : (
           <>
-            <section className="card user-form-card">
+            <section key={`assessment-step-${step}`} className={step === 1 ? 'card user-form-card assessment-step visible' : 'card user-form-card assessment-step'}>
               <h2>1. Onde está a dor?</h2>
               <BodyPainMap
                         regions={[]}
@@ -130,21 +137,24 @@ export function UserAssessmentPage() {
                 <p className="selection-summary">{selectedStructure ? `Estrutura selecionada: ${selectedStructure.name}` : 'Selecione uma estrutura no mapa.'}</p>
                 <p className="selection-summary">{structureId && placement ? `Posição: ${placement.face === 'anterior' ? 'frente' : 'costas'} — ${placement.side === 'right' ? 'lado direito' : 'lado esquerdo'}` : 'Selecione uma posição no mapa.'}</p>
               </div>
+              <div className="step-actions"><span /><button type="button" disabled={!structureId} onClick={() => goToStep(2)}>Avançar</button></div>
             </section>
-            <section className="card user-form-card">
+            <section key={`assessment-step-${step}-evaluation`} className={step === 2 ? 'card user-form-card assessment-step visible' : 'card user-form-card assessment-step'}>
               <h2>2. Faça um exercício avaliativo</h2>
               <p className="muted">Escolha o movimento indicado para a área selecionada e faça-o apenas dentro do seu limite confortável.</p>
               {availableEvaluationExercises.length === 0 ? <p className="muted empty-state">Nenhum exercício avaliativo disponível para essa área.</p> : <div className="evaluation-list">{availableEvaluationExercises.map((exercise) => { const embedUrl = exercise.youtubeUrl ? getYoutubeEmbedUrl(exercise.youtubeUrl) : null; return <article className={evaluationExerciseId === exercise.id ? 'evaluation-option selected' : 'evaluation-option'} key={exercise.id}><label><input type="radio" name="evaluation-exercise" value={exercise.id} checked={evaluationExerciseId === exercise.id} onChange={() => setEvaluationExerciseId(exercise.id)} /><span><strong>{exercise.name}</strong><small>{exercise.instructions}</small></span></label>{embedUrl && <div className="evaluation-video"><iframe src={embedUrl} title={`Vídeo: ${exercise.name}`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /></div>}</article> })}</div>}
+              <div className="step-actions"><button type="button" className="secondary" onClick={() => goToStep(1)}>Voltar</button><button type="button" disabled={!evaluationExerciseId} onClick={() => goToStep(3)}>Avançar</button></div>
             </section>
-            <section className="card user-form-card">
+            <section key={`assessment-step-${step}-pain`} className={step === 3 ? 'card user-form-card assessment-step visible' : 'card user-form-card assessment-step'}>
               <h2>3. Qual foi o nível da dor durante o exercício?</h2>
               <p className="muted">0 significa nenhuma dor e 10 significa a pior dor imaginável.</p>
               <div className="pain-scale" role="radiogroup" aria-label="Nível da dor">{painScores.map((score) => <button className={painScore === score ? 'pain-option selected' : 'pain-option'} key={score} type="button" aria-pressed={painScore === score} onClick={() => setPainScore(score as PainScore)}>{score}</button>)}</div>
               <button type="button" disabled={submitting || loading} onClick={() => void submit()}>{submitting ? 'Analisando...' : 'Ver recomendações'}</button>
+              <div className="step-actions"><button type="button" className="secondary" onClick={() => goToStep(2)}>Voltar</button><span /></div>
             </section>
           </>
         )}
-        {plan && (
+        {plan && step === 3 && (
           <section className="card recommendation-card" aria-live="polite">
             <p className="eyebrow">Resultado da avaliação</p>
             <h2>Dor {plan.painScore}/10 — nível {plan.painLevel === 'low' ? 'baixo' : plan.painLevel === 'moderate' ? 'moderado' : 'alto'}</h2>

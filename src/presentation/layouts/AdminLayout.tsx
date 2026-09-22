@@ -6,6 +6,7 @@ export function AdminLayout() {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>Anatomia Admin</div>
+        <div className={styles.userName}>Administrador</div>
         <nav aria-label="Navegação principal">
           <NavLink className={styles.navLink} to="/dashboard">
             Dashboard
@@ -19,10 +20,6 @@ export function AdminLayout() {
         </nav>
       </aside>
       <main className={styles.content}>
-        <header className={styles.header}>
-          <span>Administração</span>
-          <strong>Administrador</strong>
-        </header>
         <div className={styles.page}>
           <Outlet />
         </div>
