@@ -9,11 +9,31 @@ import type { PaginatedResult } from '@/domain/common/types'
 import { exercisesMock } from './exercises.mock'
 import { isValidYoutubeUrl } from '@/domain/exercises'
 
+const storageKey = 'anatomia-admin:exercises'
+
 export class InMemoryExerciseRepository implements ExerciseRepository {
   private readonly exercises: Exercise[]
 
   constructor(initialData: Exercise[] = exercisesMock) {
-    this.exercises = [...initialData]
+    this.exercises = this.load(initialData)
+  }
+
+  private load(initialData: Exercise[]) {
+    if (typeof window === 'undefined') return [...initialData]
+    const stored = window.localStorage.getItem(storageKey)
+    if (!stored) return [...initialData]
+    try {
+      const parsed: unknown = JSON.parse(stored)
+      return Array.isArray(parsed) ? parsed as Exercise[] : [...initialData]
+    } catch {
+      return [...initialData]
+    }
+  }
+
+  private persist() {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(storageKey, JSON.stringify(this.exercises))
+    }
   }
 
   async list(filters: ExerciseListFilters = {}): Promise<PaginatedResult<Exercise>> {
@@ -43,6 +63,7 @@ export class InMemoryExerciseRepository implements ExerciseRepository {
     const now = new Date().toISOString()
     const exercise: Exercise = { ...input, id: `${input.slug}-${Date.now()}`, createdAt: now, updatedAt: now }
     this.exercises.push(exercise)
+    this.persist()
     return exercise
   }
 
@@ -57,6 +78,7 @@ export class InMemoryExerciseRepository implements ExerciseRepository {
     }
     const updated = { ...this.exercises[index], ...input, updatedAt: new Date().toISOString() }
     this.exercises[index] = updated
+    this.persist()
     return updated
   }
 
@@ -64,6 +86,7 @@ export class InMemoryExerciseRepository implements ExerciseRepository {
     const index = this.exercises.findIndex((exercise) => exercise.id === id)
     if (index === -1) throw new Error('Exercício não encontrado.')
     this.exercises.splice(index, 1)
+    this.persist()
   }
 }
 
