@@ -14,8 +14,11 @@ export interface CreatePainAssessmentInput {
 
 export interface RecordEvaluationResponseInput {
   exerciseId: EntityId
-  painBefore: PainScore
+  painDuring?: PainScore
+  painBefore?: PainScore
   painAfter?: PainScore
+  painTypeIds?: EntityId[]
+  otherPainDescription?: string
   completed: boolean
   notes?: string
 }

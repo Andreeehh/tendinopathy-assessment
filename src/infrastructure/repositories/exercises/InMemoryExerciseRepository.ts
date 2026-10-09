@@ -6,8 +6,9 @@ import type {
   UpdateExerciseInput,
 } from '@/domain/exercises'
 import type { PaginatedResult } from '@/domain/common/types'
-import { exercisesMock } from './exercises.mock'
+import { exercisesMock, exercisesSeedVersion, legacyExerciseIds } from './exercises.mock'
 import { isValidYoutubeUrl } from '@/domain/exercises'
+import { loadSeeded } from '../seedStorage'
 
 const storageKey = 'anatomia-admin:exercises'
 
@@ -19,15 +20,14 @@ export class InMemoryExerciseRepository implements ExerciseRepository {
   }
 
   private load(initialData: Exercise[]) {
-    if (typeof window === 'undefined') return [...initialData]
-    const stored = window.localStorage.getItem(storageKey)
-    if (!stored) return [...initialData]
-    try {
-      const parsed: unknown = JSON.parse(stored)
-      return Array.isArray(parsed) ? parsed as Exercise[] : [...initialData]
-    } catch {
-      return [...initialData]
-    }
+    return loadSeeded({
+      storageKey,
+      seed: initialData,
+      version: exercisesSeedVersion,
+      legacyIds: legacyExerciseIds,
+      // Preenche o vídeo do seed apenas onde o admin ainda não cadastrou um.
+      mergeExisting: (stored, seed) => (stored.youtubeUrl ? stored : { ...stored, youtubeUrl: seed.youtubeUrl }),
+    })
   }
 
   private persist() {

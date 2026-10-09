@@ -4,6 +4,7 @@ import type { AnatomicalStructure, CreateAnatomicalStructureInput } from '@/doma
 import { anatomicalStructureRepository } from '@/infrastructure/repositories/anatomical-structures/InMemoryAnatomicalStructureRepository'
 import { BodyPainMap, painMapRegions } from '@/presentation/components/BodyPainMap'
 import type { AnatomicalMapPlacement } from '@/domain/common/types'
+import { FormWizardActions } from '@/presentation/components/FormWizardActions'
 
 const pageSize = 5
 const defaultPlacements: AnatomicalMapPlacement[] = [
@@ -44,9 +45,11 @@ export function AnatomicalStructuresPage() {
 
   useEffect(() => { void load() }, [load])
 
-  const resetForm = () => { setEditingId(null); setSelectedPlacement(undefined); setForm({ ...emptyForm, mapPlacements: [...defaultPlacements] }); setFormTab('data'); setScreen('form') }
+  const startCreate = () => { setEditingId(null); setSelectedPlacement(undefined); setForm({ ...emptyForm, mapPlacements: [...defaultPlacements] }); setFormTab('data'); setScreen('form') }
+  const closeForm = () => { setEditingId(null); setSelectedPlacement(undefined); setScreen('list') }
   const edit = (structure: AnatomicalStructure) => {
     setScreen('form')
+    setFormTab('data')
     setEditingId(structure.id)
     const firstPlacement = structure.mapPlacements?.[0]
     setPlacementFace(firstPlacement?.face ?? 'anterior')
@@ -55,12 +58,18 @@ export function AnatomicalStructuresPage() {
     setForm({ name: structure.name, slug: structure.slug, description: structure.description, active: structure.active, mapPosition: structure.mapPosition, mapPlacements: structure.mapPlacements })
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setSaving(true); setError(null)
-    if (!form.mapPlacements || form.mapPlacements.length < 2) {
-      setError('Configure pelo menos duas posições (lado e face) no mapa.')
-      setSaving(false)
+    event.preventDefault(); setError(null)
+    if (!form.name.trim() || !form.slug.trim() || !form.description.trim()) {
+      setError('Preencha nome, slug e descrição.')
+      setFormTab('data')
       return
     }
+    if (!form.mapPlacements || form.mapPlacements.length < 2) {
+      setError('Configure pelo menos duas posições (lado e face) no mapa.')
+      setFormTab('map')
+      return
+    }
+    setSaving(true)
     console.info('[AnatomicalStructures] salvando estrutura', {
       editingId,
       name: form.name,
@@ -69,7 +78,7 @@ export function AnatomicalStructuresPage() {
     try {
       if (editingId) await anatomicalStructureRepository.update(editingId, form)
       else await anatomicalStructureRepository.create(form)
-      resetForm(); await load()
+      closeForm(); await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível salvar a estrutura anatômica.') }
     finally { setSaving(false) }
   }
@@ -84,21 +93,19 @@ export function AnatomicalStructuresPage() {
 
   return <>
     {error && <div className="alert" role="alert">{error}</div>}
-    <section className={screen === 'form' ? 'card form-card' : 'hidden'} aria-label="Formulário de estrutura anatômica"><h2>{editingId ? 'Editar estrutura' : 'Nova estrutura'}</h2><form onSubmit={submit} className="region-form">
+    <section className={screen === 'form' ? 'card form-card' : 'hidden'} aria-label="Formulário de estrutura anatômica"><h2>{editingId ? 'Editar estrutura' : 'Nova estrutura'}</h2><form onSubmit={submit} noValidate className="region-form">
       <div className="tab-bar"><button type="button" className={formTab === 'data' ? 'tab active' : 'tab'} onClick={() => setFormTab('data')}>Dados</button><button type="button" className={formTab === 'map' ? 'tab active' : 'tab'} onClick={() => setFormTab('map')}>Posição no mapa</button></div>
       <div className={formTab === 'map' ? 'wide' : 'hidden'}><p className="muted">Arraste os quatro marcadores para as posições anatômicas. Selecione um marker antes de usar a lixeira.</p><BodyPainMap regions={[]} selectedRegionId="" structureOptions={[{ id: editingId ?? 'draft', label: form.name || 'Estrutura', placements: form.mapPlacements }]} selectedStructureId={editingId ?? 'draft'} selectedPlacement={selectedPlacement} placementEditor showQuadrantGuides placementFace={placementFace} placementSide={placementSide} onSelect={() => undefined} onSelectStructure={(_, placement) => { setSelectedPlacement(placement); if (!(form.mapPlacements ?? []).some((item) => item.face === placement.face && item.side === placement.side)) setForm({ ...form, mapPlacements: [...(form.mapPlacements ?? []), placement] }) }} onPlacementAdd={(placement) => { if ((form.mapPlacements ?? []).length >= 4) return; setSelectedPlacement(placement); setForm({ ...form, mapPlacements: [...(form.mapPlacements ?? []), placement] }) }} onPlacementMove={(next) => { if (!selectedPlacement) return; const current = form.mapPlacements ?? []; const index = current.indexOf(selectedPlacement); if (index < 0 || current.some((item, itemIndex) => itemIndex !== index && item.face === next.face && item.side === next.side)) return; const updated = [...current]; updated[index] = next; setSelectedPlacement(next); setForm({ ...form, mapPlacements: updated }) }} onPlacementRemove={(placement) => { setSelectedPlacement(undefined); setForm({ ...form, mapPlacements: (form.mapPlacements ?? []).filter((item) => item !== placement) }) }} /></div>
       <div className={formTab === 'data' ? 'form-fields' : 'hidden'}><label>Nome<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
       <label>Slug<input required value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value })} /></label>
       <label className="wide">Descrição<textarea required rows={2} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
-      <label className="checkbox"><input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} /> Ativa</label>
-      <div className="form-actions"><button type="button" onClick={() => setFormTab('map')}>Avançar</button>{editingId && <button type="button" className="secondary" onClick={resetForm}>Cancelar</button>}</div></div>
-      <div className={formTab === 'map' ? 'form-actions' : 'hidden'}><button type="submit" disabled={saving}>{saving ? 'Salvando...' : 'Salvar estrutura'}</button><button type="button" className="secondary" onClick={() => setFormTab('data')}>Voltar</button></div>
+      <label className="checkbox"><input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} /> Ativa</label></div>
+      <FormWizardActions tabIndex={formTab === 'data' ? 0 : 1} tabCount={2} isEditing={editingId !== null} saving={saving} saveLabel="Salvar estrutura" onPrevious={() => setFormTab('data')} onNext={() => setFormTab('map')} onCancel={closeForm} />
     </form></section>
-    <section className={screen === 'list' ? 'card' : 'hidden'} aria-label="Lista de estruturas anatômicas"><div className="list-toolbar"><h1>Estruturas anatômicas</h1><button type="button" onClick={resetForm}>Nova estrutura</button></div><div className="filters">
+    <section className={screen === 'list' ? 'card' : 'hidden'} aria-label="Lista de estruturas anatômicas"><div className="list-toolbar"><h1>Estruturas anatômicas</h1><button type="button" onClick={startCreate}>Nova estrutura</button></div><div className="filters">
       <label>Buscar<input placeholder="Nome ou slug" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} /></label>
       <label>Status<select value={activeFilter} onChange={(event) => { setActiveFilter(event.target.value); setPage(1) }}><option value="all">Todos</option><option value="active">Ativas</option><option value="inactive">Inativas</option></select></label>
     </div>
-    <button type="button" className="secondary" onClick={() => setScreen('list')}>Voltar para lista</button>
     {loading ? <p className="muted">Carregando...</p> : structures.length === 0 ? <p className="muted empty-state">Nenhuma estrutura encontrada.</p> : <><div className="table-wrap"><table><thead><tr><th>Nome</th><th>Status</th><th>Ações</th></tr></thead><tbody>{structures.map((structure) => <tr key={structure.id}><td><strong>{structure.name}</strong><br /><span className="muted">{structure.description}</span></td><td><span className={structure.active ? 'status status-active' : 'status'}>{structure.active ? 'Ativa' : 'Inativa'}</span></td><td><div className="row-actions"><button className="link-button" type="button" onClick={() => edit(structure)}>Editar</button><button className="link-button danger" type="button" disabled={deletingId === structure.id} onClick={() => void remove(structure)}>{deletingId === structure.id ? 'Excluindo...' : 'Excluir'}</button></div></td></tr>)}</tbody></table></div><div className="pagination"><span className="muted">{total} resultado(s)</span><div><button className="secondary" type="button" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>Anterior</button><span> Página {page} de {totalPages} </span><button className="secondary" type="button" disabled={page >= totalPages} onClick={() => setPage((current) => current + 1)}>Próxima</button></div></div></>}
     </section>
   </>

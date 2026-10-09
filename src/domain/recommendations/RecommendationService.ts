@@ -8,6 +8,8 @@ export interface RecommendationRequest {
   painArea: PainArea
   exercises: Exercise[]
   sessionId?: string
+  /** Sinais de alerta informados pelo usuário (ex.: tipos de dor marcados como alerta). */
+  alertSigns?: string[]
 }
 
 export function createRecommendationPlan({
@@ -15,8 +17,21 @@ export function createRecommendationPlan({
   painArea,
   exercises,
   sessionId,
+  alertSigns = [],
 }: RecommendationRequest): RecommendationPlan {
   const painLevel = classifyPainScore(painScore)
+
+  if (alertSigns.length > 0) {
+    return {
+      painScore,
+      painLevel,
+      canStartExercises: false,
+      requiresProfessionalGuidance: true,
+      safetyMessage: `Sinal de alerta informado (${alertSigns.join(', ')}). Interrompa a avaliação e procure orientação profissional.`,
+      recommendations: [],
+      sessionId,
+    }
+  }
   const matchingExercises = exercises.filter(
     (exercise) =>
       exercise.active &&

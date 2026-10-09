@@ -1,5 +1,5 @@
 import type { PaginatedResult } from '@/domain/common/types'
-import type { Exercise, ExerciseKind, ExerciseTarget } from './Exercise'
+import type { Exercise, ExerciseKind, ExercisePrescription, ExerciseTarget } from './Exercise'
 
 export interface ExerciseListFilters {
   /** @deprecated Compatibility filter for legacy records. */
@@ -12,7 +12,7 @@ export interface ExerciseListFilters {
   pageSize?: number
 }
 
-export interface CreateExerciseInput {
+export interface CreateExerciseInput extends ExercisePrescription {
   /** @deprecated Compatibility field while legacy forms are migrated. */
   bodyRegionId?: string
   anatomicalStructureId: string

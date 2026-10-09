@@ -36,6 +36,15 @@ export function AdminLayout() {
           <NavLink className={styles.navLink} to="/exercises" onClick={closeMenu}>
             Exercícios
           </NavLink>
+          <NavLink className={styles.navLink} to="/evaluation-groups" onClick={closeMenu}>
+            Grupos avaliativos
+          </NavLink>
+          <NavLink className={styles.navLink} to="/treatment-plans" onClick={closeMenu}>
+            Planos terapêuticos
+          </NavLink>
+          <NavLink className={styles.navLink} to="/pain-types" onClick={closeMenu}>
+            Tipos de dor
+          </NavLink>
         </nav>
       </aside>
       {menuOpen && <button type="button" className={styles.overlay} aria-label="Fechar menu" onClick={closeMenu} />}

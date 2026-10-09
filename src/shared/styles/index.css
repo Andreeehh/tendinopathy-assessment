@@ -242,6 +242,8 @@ legend {
 }
 .assessment-step.visible {
   display: block;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
   animation: assessment-slide-in 0.3s ease both;
 }
 @keyframes assessment-slide-in {
@@ -346,9 +348,10 @@ button:hover {
   display: contents;
 }
 .tab-bar {
+  grid-column: 1 / -1;
   display: flex;
   gap: 4px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   border-bottom: 1px solid #e2e8f0;
 }
 .tab {
@@ -601,3 +604,25 @@ tbody tr:last-child td {
     gap: 8px;
   }
 }
+
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; color: #334155; padding: 6px 12px; font-size: .8rem; }
+.chip:hover { background: #eff6ff; }
+.chip.selected { border-color: #2563eb; background: #2563eb; color: #fff; }
+.pain-other { display: grid; gap: 6px; margin-top: 12px; color: #475569; font-size: .875rem; font-weight: 600; }
+.pain-other input { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 10px; font: inherit; }
+.range-fields { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.range-fields label { display: grid; gap: 6px; color: #475569; font-size: .875rem; font-weight: 600; }
+.range-fields input { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px 10px; font: inherit; }
+.group-hint { margin: 0 0 10px; font-size: .8rem; }
+.battery-progress { margin: 0 0 12px; color: #1d4ed8; font-size: .875rem; font-weight: 600; }
+.battery-list { display: grid; gap: 16px; }
+.battery-item { display: grid; gap: 10px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+.battery-item h3 { margin: 0; }
+.battery-item p { margin: 0; }
+.battery-item .pain-scale { margin: 4px 0; }
+.result-list { display: grid; gap: 6px; margin: 0 0 16px; padding: 0; list-style: none; }
+.result-list li { display: flex; justify-content: space-between; gap: 12px; border-radius: 6px; background: #f8fafc; padding: 8px 12px; color: #475569; font-size: .875rem; }
+.plan-name { margin: 0 0 12px; color: #1d4ed8; }
+.prescription { color: #1d4ed8; font-size: .875rem; font-weight: 600; }
+.wizard-actions { flex-wrap: wrap; align-items: center; margin-top: 8px; }

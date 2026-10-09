@@ -8,6 +8,16 @@ export interface ExerciseRecommendation {
   reason: string
 }
 
+export interface GroupResultSummary {
+  maxPain: PainScore
+  averagePain: number
+  answeredCount: number
+  totalCount: number
+  /** Verdadeiro quando todos os exercícios da bateria foram respondidos. */
+  complete: boolean
+  worstExerciseId?: EntityId
+}
+
 export interface RecommendationPlan {
   painScore: PainScore
   painLevel: PainLevel
@@ -16,4 +26,7 @@ export interface RecommendationPlan {
   safetyMessage?: string
   recommendations: ExerciseRecommendation[]
   sessionId?: EntityId
+  /** Nome do plano (grupo de exercícios terapêuticos) escolhido pelo resultado da bateria. */
+  planName?: string
+  groupSummary?: GroupResultSummary
 }

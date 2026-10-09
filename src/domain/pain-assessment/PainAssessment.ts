@@ -27,8 +27,12 @@ export interface PainEvaluationResponse {
   id: EntityId
   sessionId: EntityId
   exerciseId: EntityId
-  painBefore: PainScore
+  /** Dor sentida durante o exercício avaliativo (0–10). */
+  painDuring?: PainScore
+  painBefore?: PainScore
   painAfter?: PainScore
+  painTypeIds?: EntityId[]
+  otherPainDescription?: string
   completed: boolean
   notes?: string
   answeredAt: string
